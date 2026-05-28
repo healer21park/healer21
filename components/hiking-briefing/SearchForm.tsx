@@ -11,6 +11,8 @@ import type { BriefingQuery, MountainId } from '@/types/hiking'
 
 type SearchFormProps = {
   onSubmit: (query: BriefingQuery) => void
+  onMountainChange?: (id: MountainId | null) => void
+  onTrailChange?: (trailId: string, reversed: boolean) => void
 }
 
 type FormErrors = {
@@ -19,7 +21,7 @@ type FormErrors = {
   departureStation?: string
 }
 
-export function SearchForm({ onSubmit }: SearchFormProps) {
+export function SearchForm({ onSubmit, onMountainChange, onTrailChange }: SearchFormProps) {
   const [mountainId, setMountainId] = useState<MountainId | ''>('')
   const [date, setDate] = useState('')
   const [departureStation, setDepartureStation] = useState('')
@@ -30,18 +32,27 @@ export function SearchForm({ onSubmit }: SearchFormProps) {
   const selectedMountain = mountains.find((m) => m.id === mountainId) ?? null
 
   const handleMountainChange = (value: string) => {
-    setMountainId(value as MountainId)
+    const id = value as MountainId
+    setMountainId(id)
     setTrailId(null)
     setReversed(false)
     setErrors((e) => ({ ...e, mountain: undefined }))
+    onMountainChange?.(id || null)
   }
 
   const handleSelectTrail = (id: string) => {
     setTrailId(id)
     setReversed(false)
+    onTrailChange?.(id, false)
   }
 
-  const handleToggleReverse = () => setReversed((r) => !r)
+  const handleToggleReverse = () => {
+    setReversed((r) => {
+      const next = !r
+      if (trailId) onTrailChange?.(trailId, next)
+      return next
+    })
+  }
 
   const validate = (): FormErrors => {
     const e: FormErrors = {}
