@@ -1,10 +1,11 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { MapContainer, TileLayer, Polyline, Marker, Popup, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import type { MountainId, ShelterConfig, Trail } from '@/types/hiking'
+import type { TrailSegment } from '@/services/trails'
 import { getMountain } from '@/config/mountains'
 
 // 기본 마커 아이콘 CDN으로 수정 (webpack 번들 깨짐 방지)
@@ -36,6 +37,14 @@ const endIcon = L.divIcon({
   iconSize: [14, 14],
   iconAnchor: [7, 7],
 })
+
+// 난이도별 색상
+const DIFFICULTY_COLOR: Record<TrailSegment['difficulty'], string> = {
+  '상': '#dc2626',   // 빨강
+  '중': '#d97706',   // 주황
+  '하': '#16a34a',   // 초록
+  '기타': '#6b7280', // 회색
+}
 
 const KOREA_CENTER: [number, number] = [36.5, 127.5]
 const KOREA_ZOOM = 7
@@ -70,11 +79,25 @@ export default function LeafletMapClient({
   reversed = false,
   onShelterClick,
 }: Props) {
+  const [trailSegments, setTrailSegments] = useState<TrailSegment[]>([])
+
+  // 산 선택 시 V-World 등산로 데이터 페치
+  useEffect(() => {
+    if (!mountain) { setTrailSegments([]); return }
+    fetch(`/api/briefing/trails?mountainId=${mountain}`)
+      .then((r) => r.json())
+      .then((data) => setTrailSegments(data.segments ?? []))
+      .catch(() => setTrailSegments([]))
+  }, [mountain])
+
   const start = trail ? (reversed ? trail.endPoint : trail.startPoint) : null
   const end = trail ? (reversed ? trail.startPoint : trail.endPoint) : null
-  const polylinePath: [number, number][] = start && end
-    ? [[start.lat, start.lng], [end.lat, end.lng]]
-    : []
+
+  // V-World 데이터 없을 때만 직선 경로 표시
+  const fallbackPath: [number, number][] =
+    trailSegments.length === 0 && start && end
+      ? [[start.lat, start.lng], [end.lat, end.lng]]
+      : []
 
   return (
     <MapContainer
@@ -89,13 +112,28 @@ export default function LeafletMapClient({
       />
       <MapController mountain={mountain} />
 
-      {polylinePath.length > 0 && (
+      {/* V-World 실제 등산로 세그먼트 */}
+      {trailSegments.map((seg, i) => (
         <Polyline
-          positions={polylinePath}
+          key={i}
+          positions={seg.coordinates}
+          pathOptions={{
+            color: DIFFICULTY_COLOR[seg.difficulty],
+            weight: 2.5,
+            opacity: 0.8,
+          }}
+        />
+      ))}
+
+      {/* V-World 없을 때 직선 fallback */}
+      {fallbackPath.length > 0 && (
+        <Polyline
+          positions={fallbackPath}
           pathOptions={{ color: '#374151', weight: 3, dashArray: '8 4' }}
         />
       )}
 
+      {/* 출발·도착 마커 */}
       {start && (
         <Marker position={[start.lat, start.lng]} icon={startIcon}>
           <Popup>{start.name} (출발)</Popup>
@@ -107,6 +145,7 @@ export default function LeafletMapClient({
         </Marker>
       )}
 
+      {/* 대피소 마커 */}
       {shelters.map((shelter) => (
         <Marker
           key={shelter.id}
