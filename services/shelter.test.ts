@@ -1,0 +1,46 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { fetchShelterAvailability } from './shelter'
+
+describe('fetchShelterAvailability', () => {
+  beforeEach(() => vi.restoreAllMocks())
+
+  it('스크래핑 실패 시 available: null로 graceful fallback한다', async () => {
+    vi.spyOn(global, 'fetch').mockRejectedValueOnce(new Error('network error'))
+    const result = await fetchShelterAvailability('jirisan', '2025-06-07')
+    expect(result.length).toBeGreaterThan(0)
+    result.forEach((s) => {
+      expect(s.available).toBeNull()
+      expect(s.id).toBeTruthy()
+      expect(s.name).toBeTruthy()
+    })
+  })
+
+  it('HTTP 오류 시 available: null로 fallback한다', async () => {
+    vi.spyOn(global, 'fetch').mockResolvedValueOnce({ ok: false, status: 503 } as Response)
+    const result = await fetchShelterAvailability('jirisan', '2025-06-07')
+    expect(result.every((s) => s.available === null)).toBe(true)
+  })
+
+  it('응답에 잔여 인원 숫자가 있으면 파싱한다', async () => {
+    const fakeHtml = `
+      <tr><td>노고단</td><td>8 명</td></tr>
+      <tr><td>장터목</td><td>0 명</td></tr>
+    `
+    vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      text: async () => fakeHtml,
+    } as Response)
+
+    const result = await fetchShelterAvailability('jirisan', '2025-06-07')
+    const nogodan = result.find((s) => s.name === '노고단대피소')
+    expect(nogodan?.available).toBe(8)
+  })
+
+  it('지리산 shelters 목록을 반환한다', async () => {
+    vi.spyOn(global, 'fetch').mockRejectedValueOnce(new Error('fail'))
+    const result = await fetchShelterAvailability('jirisan', '2025-06-07')
+    const names = result.map((s) => s.name)
+    expect(names).toContain('노고단대피소')
+    expect(names).toContain('장터목대피소')
+  })
+})
