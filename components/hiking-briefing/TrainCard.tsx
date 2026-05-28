@@ -1,50 +1,42 @@
-import type { TrainSchedule } from '@/types/hiking'
+import { ExternalLink } from 'lucide-react'
+import type { TrainLinks } from '@/services/train'
 
 type TrainCardProps = {
-  schedules: TrainSchedule[]
-  from: string
-  to: string
-  apiKeyMissing?: boolean
+  links: TrainLinks
 }
 
-const availabilityLabel: Record<TrainSchedule['availability'], string> = {
-  available: '○ 여유',
-  moderate: '△ 보통',
-  soldout: '× 매진',
-}
-
-export function TrainCard({ schedules, from, to, apiKeyMissing }: TrainCardProps) {
-  if (apiKeyMissing) {
-    return (
-      <p className="text-xs text-muted-foreground">
-        KORAIL_API_KEY가 설정되지 않았습니다.
-      </p>
-    )
-  }
-
-  if (schedules.length === 0) {
-    return <p className="text-xs text-muted-foreground">열차 시간표가 없습니다.</p>
-  }
-
+export function TrainCard({ links }: TrainCardProps) {
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-3">
       <p className="text-xs text-muted-foreground">
-        {from} → {to}
+        {links.from} → {links.to} · {links.date}
       </p>
-      <div className="grid grid-cols-4 text-xs text-muted-foreground pb-1 border-b border-border">
-        <span>출발</span>
-        <span>도착</span>
-        <span>종류</span>
-        <span>잔여</span>
+      <div className="flex flex-col gap-2">
+        <a
+          href={links.korailUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-between px-3 py-2.5 border border-border rounded-sm hover:bg-accent text-sm transition-colors"
+        >
+          <div className="flex flex-col gap-0.5">
+            <span className="font-medium">코레일 (KTX)</span>
+            <span className="text-xs text-muted-foreground">korail.com에서 시간표 확인 및 예매</span>
+          </div>
+          <ExternalLink className="size-4 text-muted-foreground flex-shrink-0" />
+        </a>
+        <a
+          href={links.srtUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-between px-3 py-2.5 border border-border rounded-sm hover:bg-accent text-sm transition-colors"
+        >
+          <div className="flex flex-col gap-0.5">
+            <span className="font-medium">SRT</span>
+            <span className="text-xs text-muted-foreground">srail.kr에서 시간표 확인 및 예매</span>
+          </div>
+          <ExternalLink className="size-4 text-muted-foreground flex-shrink-0" />
+        </a>
       </div>
-      {schedules.map((s, i) => (
-        <div key={i} className="grid grid-cols-4 text-sm py-1 border-b border-border last:border-0">
-          <span>{s.departure}</span>
-          <span>{s.arrival}</span>
-          <span>{s.type}</span>
-          <span className="text-xs">{availabilityLabel[s.availability]}</span>
-        </div>
-      ))}
     </div>
   )
 }

@@ -1,42 +1,24 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { fetchTrainSchedules } from './train'
+import { describe, it, expect } from 'vitest'
+import { buildTrainLinks } from './train'
 
-describe('fetchTrainSchedules', () => {
-  beforeEach(() => vi.restoreAllMocks())
-
-  it('KORAIL_API_KEY 미설정 시 빈 배열을 반환한다', async () => {
-    vi.stubEnv('KORAIL_API_KEY', '')
-    const result = await fetchTrainSchedules('서울역', '구례구역', '2025-06-07')
-    expect(result).toEqual([])
-    vi.unstubAllEnvs()
+describe('buildTrainLinks', () => {
+  it('출발역·도착역·날짜를 포함한 코레일 URL을 생성한다', () => {
+    const result = buildTrainLinks('서울역', '구례구역', '2025-06-07')
+    expect(result.korailUrl).toContain('korail.com')
+    expect(result.korailUrl).toContain('20250607')
+    expect(result.korailUrl).toContain(encodeURIComponent('서울역'))
   })
 
-  it('API 응답을 TrainSchedule[]로 변환한다', async () => {
-    vi.stubEnv('KORAIL_API_KEY', 'test-key')
-    vi.spyOn(global, 'fetch').mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        response: {
-          body: {
-            items: {
-              item: [
-                {
-                  depplandtime: '202506070610',
-                  arrplandtime: '202506070845',
-                  traingradename: 'KTX',
-                },
-              ],
-            },
-          },
-        },
-      }),
-    } as Response)
+  it('SRT URL을 생성한다', () => {
+    const result = buildTrainLinks('수서역', '진주역', '2025-06-07')
+    expect(result.srtUrl).toContain('srail.kr')
+    expect(result.srtUrl).toContain('20250607')
+  })
 
-    const result = await fetchTrainSchedules('서울역', '구례구역', '2025-06-07')
-    expect(result).toHaveLength(1)
-    expect(result[0].departure).toBe('06:10')
-    expect(result[0].arrival).toBe('08:45')
-    expect(result[0].type).toBe('KTX')
-    vi.unstubAllEnvs()
+  it('from·to·date 필드를 반환한다', () => {
+    const result = buildTrainLinks('서울역', '구례구역', '2025-06-07')
+    expect(result.from).toBe('서울역')
+    expect(result.to).toBe('구례구역')
+    expect(result.date).toBe('2025-06-07')
   })
 })

@@ -127,14 +127,7 @@ export default function HikingBriefingPage() {
 
               {(state.trains.data || state.trains.error) && (
                 <CardShell title="KTX·SRT" error={state.trains.error} onRetry={query ? () => retrySection('trains', query) : undefined}>
-                  {state.trains.data && (
-                    <TrainCard
-                      schedules={state.trains.data.schedules}
-                      from={query?.departureStation ?? ''}
-                      to={mountain?.nearestStation ?? ''}
-                      apiKeyMissing={state.trains.data.apiKeyMissing}
-                    />
-                  )}
+                  {state.trains.data && <TrainCard links={state.trains.data} />}
                 </CardShell>
               )}
 

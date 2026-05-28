@@ -5,10 +5,10 @@ import type {
   BriefingQuery,
   WeatherData,
   ShelterAvailability,
-  TrainSchedule,
   MarathonEvent,
   ContentData,
 } from '@/types/hiking'
+import type { TrainLinks } from '@/services/train'
 import { getMountain } from '@/config/mountains'
 
 type SectionState<T> = {
@@ -20,7 +20,7 @@ type SectionState<T> = {
 export type BriefingState = {
   weather: SectionState<WeatherData>
   shelters: SectionState<ShelterAvailability[]>
-  trains: SectionState<{ schedules: TrainSchedule[]; apiKeyMissing?: boolean }>
+  trains: SectionState<TrainLinks>
   marathons: SectionState<MarathonEvent[]>
   content: SectionState<ContentData>
 }
@@ -98,13 +98,8 @@ export function useBriefing() {
           `/api/briefing/train?from=${encodeURIComponent(query.departureStation)}&to=${encodeURIComponent(mountain.nearestStation)}&date=${query.date}`,
         )
         .then((r) => r.json())
-        .then((data) =>
-          setSection('trains', {
-            data: { schedules: data.schedules ?? [], apiKeyMissing: !!data.error },
-            loading: false,
-          }),
-        )
-        .catch(() => setSection('trains', { loading: false, error: '열차 정보를 불러오지 못했습니다' })),
+        .then((data) => setSection('trains', { data, loading: false }))
+        .catch(() => setSection('trains', { loading: false, error: '열차 링크를 생성하지 못했습니다' })),
 
       window
         .fetch(`/api/briefing/marathon?date=${query.date}`)
