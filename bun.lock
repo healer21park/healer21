@@ -8,12 +8,15 @@
         "@base-ui/react": "^1.2.0",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
+        "korean-marathon-schedule": "^0.2.0",
+        "leaflet": "^1.9.4",
         "lucide-react": "^0.576.0",
         "next": "16.1.6",
         "next-themes": "^0.4.6",
         "radix-ui": "^1.4.3",
         "react": "19.2.3",
         "react-dom": "19.2.3",
+        "react-leaflet": "^5.0.0",
         "shadcn": "^3.8.5",
         "tailwind-merge": "^3.5.0",
         "tw-animate-css": "^1.4.0",
@@ -24,6 +27,7 @@
         "@testing-library/jest-dom": "^6.9.1",
         "@testing-library/react": "^16.3.2",
         "@testing-library/user-event": "^14.6.1",
+        "@types/leaflet": "^1.9.21",
         "@types/node": "^20",
         "@types/react": "^19",
         "@types/react-dom": "^19",
@@ -427,6 +431,8 @@
 
     "@radix-ui/rect": ["@radix-ui/rect@1.1.1", "", {}, "sha512-HPwpGIzkl28mWyZqG52jiqDJ12waP11Pa1lGoiyUkIEuMLBP0oeK/C89esbXrxsky5we7dfd8U58nm0SgAWpVw=="],
 
+    "@react-leaflet/core": ["@react-leaflet/core@3.0.0", "", { "peerDependencies": { "leaflet": "^1.9.0", "react": "^19.0.0", "react-dom": "^19.0.0" } }, "sha512-3EWmekh4Nz+pGcr+xjf0KNyYfC3U2JjnkWsh0zcqaexYqmmB5ZhH37kz41JXGmKzpaMZCnPofBBm64i+YrEvGQ=="],
+
     "@rolldown/binding-android-arm64": ["@rolldown/binding-android-arm64@1.0.0-rc.9", "", { "os": "android", "cpu": "arm64" }, "sha512-lcJL0bN5hpgJfSIz/8PIf02irmyL43P+j1pTCfbD1DbLkmGRuFIA4DD3B3ZOvGqG0XiVvRznbKtN0COQVaKUTg=="],
 
     "@rolldown/binding-darwin-arm64": ["@rolldown/binding-darwin-arm64@1.0.0-rc.9", "", { "os": "darwin", "cpu": "arm64" }, "sha512-J7Zk3kLYFsLtuH6U+F4pS2sYVzac0qkjcO5QxHS7OS7yZu2LRs+IXo+uvJ/mvpyUljDJ3LROZPoQfgBIpCMhdQ=="],
@@ -527,9 +533,13 @@
 
     "@types/estree": ["@types/estree@1.0.8", "", {}, "sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w=="],
 
+    "@types/geojson": ["@types/geojson@7946.0.16", "", {}, "sha512-6C8nqWur3j98U6+lXDfTUWIfgvZU+EumvpHKcYjujKH7woYyLj2sUmff0tRhrqM7BohUw7Pz3ZB1jj2gW9Fvmg=="],
+
     "@types/json-schema": ["@types/json-schema@7.0.15", "", {}, "sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA=="],
 
     "@types/json5": ["@types/json5@0.0.29", "", {}, "sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ=="],
+
+    "@types/leaflet": ["@types/leaflet@1.9.21", "", { "dependencies": { "@types/geojson": "*" } }, "sha512-TbAd9DaPGSnzp6QvtYngntMZgcRk+igFELwR2N99XZn7RXUdKgsXMR+28bUO0rPsWp8MIu/f47luLIQuSLYv/w=="],
 
     "@types/node": ["@types/node@20.19.37", "", { "dependencies": { "undici-types": "~6.21.0" } }, "sha512-8kzdPJ3FsNsVIurqBs7oodNnCEVbni9yUEkaHbgptDACOPW04jimGagZ51E6+lXUwJjgnBw+hyko/lkFWCldqw=="],
 
@@ -1149,9 +1159,13 @@
 
     "kleur": ["kleur@4.1.5", "", {}, "sha512-o+NO+8WrRiQEE4/7nwRJhN1HWpVmJm511pBHUxPLtp0BUISzlBplORYSmTclCnJvQq2tKu/sgl3xVpkc7ZWuQQ=="],
 
+    "korean-marathon-schedule": ["korean-marathon-schedule@0.2.0", "", { "bin": { "korean-marathon-schedule": "src/cli.js" } }, "sha512-8HhaqVfrV0YPTuyFfJoyy/H0sKOxWoRuhckWk/ZDBhNZqKsWvqfGKXE4bTf7guYnu6EnI+DxYFQPwjnle1Q9Ww=="],
+
     "language-subtag-registry": ["language-subtag-registry@0.3.23", "", {}, "sha512-0K65Lea881pHotoGEa5gDlMxt3pctLi2RplBb7Ezh4rRdLEOtgi7n4EwK9lamnUCkKBqaeKRVebTq6BAxSkpXQ=="],
 
     "language-tags": ["language-tags@1.0.9", "", { "dependencies": { "language-subtag-registry": "^0.3.20" } }, "sha512-MbjN408fEndfiQXbFQ1vnd+1NoLDsnQW41410oQBXiyXDMYH5z505juWa4KUE1LqxRC7DgOgZDbKLxHIwm27hA=="],
+
+    "leaflet": ["leaflet@1.9.4", "", {}, "sha512-nxS1ynzJOmOlHp+iL3FyWqK89GtNL8U8rvlMOsQdTTssxZwCXh8N2NB3GDQOL+YR3XnWyZAxwQixURb+FA74PA=="],
 
     "levn": ["levn@0.4.1", "", { "dependencies": { "prelude-ls": "^1.2.1", "type-check": "~0.4.0" } }, "sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ=="],
 
@@ -1364,6 +1378,8 @@
     "react-dom": ["react-dom@19.2.3", "", { "dependencies": { "scheduler": "^0.27.0" }, "peerDependencies": { "react": "^19.2.3" } }, "sha512-yELu4WmLPw5Mr/lmeEpox5rw3RETacE++JgHqQzd2dg+YbJuat3jH4ingc+WPZhxaoFzdv9y33G+F7Nl5O0GBg=="],
 
     "react-is": ["react-is@17.0.2", "", {}, "sha512-w2GsyukL62IJnlaff/nRegPQR94C/XXamvMWmSHRJ4y7Ts/4ocGRmTHvOs8PSE6pB3dWOrD/nueuU5sduBsQ4w=="],
+
+    "react-leaflet": ["react-leaflet@5.0.0", "", { "dependencies": { "@react-leaflet/core": "^3.0.0" }, "peerDependencies": { "leaflet": "^1.9.0", "react": "^19.0.0", "react-dom": "^19.0.0" } }, "sha512-CWbTpr5vcHw5bt9i4zSlPEVQdTVcML390TjeDG0cK59z1ylexpqC6M1PJFjV8jD7CF+ACBFsLIDs6DRMoLEofw=="],
 
     "react-refresh": ["react-refresh@0.18.0", "", {}, "sha512-QgT5//D3jfjJb6Gsjxv0Slpj23ip+HtOpnNgnb2S5zU3CB26G/IDPGoy4RJB42wzFE46DRsstbW6tKHoKbhAxw=="],
 
