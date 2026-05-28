@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wireframe: hiking-briefing</title>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+  :root {
+    --w-bg: #f5f5f5;
+    --w-border: #ccc;
+    --w-text: #555;
+    --w-muted: #aaa;
+    --w-fill: #eee;
+  }
+  * { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace; color: var(--w-text); }
+  body { background: var(--w-bg); margin: 0; padding: 0; }
+  nav { position: sticky; top: 0; z-index: 40; background: var(--w-bg); border-bottom: 1px solid var(--w-border); }
+  nav button { cursor: pointer; font-size: 13px; }
+  nav button:hover { background: var(--w-fill); border-radius: 4px; }
+  nav button.active { font-weight: bold; border-bottom: 2px solid var(--w-text); }
+  .screen { display: none; }
+  .screen.active { display: block; }
+  .vp-toggle button { font-size: 12px; padding: 2px 8px; border: 1px solid var(--w-border); cursor: pointer; background: white; }
+  .vp-toggle button:first-child { border-radius: 4px 0 0 4px; }
+  .vp-toggle button:last-child { border-radius: 0 4px 4px 0; border-left: none; }
+  .vp-toggle button.active { background: var(--w-text); color: white; }
+
+  body.viewport-mobile .screen-content {
+    max-width: 375px !important;
+    margin: 24px auto !important;
+    border: 2px solid var(--w-border);
+    border-radius: 24px;
+    background: white;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    overflow: hidden;
+    height: auto !important;
+    min-height: auto !important;
+  }
+  body.viewport-mobile .sidebar {
+    width: 100% !important;
+    height: auto !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--w-border);
+  }
+  body.viewport-mobile .map-panel {
+    height: 260px !important;
+    min-height: 260px !important;
+  }
+  body.viewport-mobile .app-layout {
+    flex-direction: column !important;
+  }
+
+  .screen-notes { background: #fffde7; border-left: 3px solid #ffd54f; padding: 12px 16px; margin-top: 0; font-size: 13px; }
+  .screen-notes summary { cursor: pointer; font-weight: bold; font-size: 12px; color: #b0a050; text-transform: uppercase; letter-spacing: 0.05em; }
+  .screen-notes p { margin: 6px 0 2px; color: #777; }
+  .screen-notes ul { margin: 4px 0 0 16px; padding: 0; color: #777; }
+  .screen-notes li { margin: 2px 0; }
+
+  /* Form elements */
+  .w-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--w-muted); display: block; margin-bottom: 3px; }
+  .w-select, .w-input-field {
+    width: 100%; border: 1px solid var(--w-border); padding: 6px 8px;
+    font-size: 12px; background: white; color: var(--w-text);
+    font-family: inherit; appearance: none; -webkit-appearance: none;
+  }
+  .w-select:disabled, .w-input-field:disabled { background: var(--w-fill); color: var(--w-muted); }
+  .w-select.error, .w-input-field.error { border-color: #c0392b; }
+  .w-error-msg { font-size: 10px; color: #c0392b; margin-top: 2px; }
+  .w-btn-primary {
+    width: 100%; padding: 8px; font-size: 12px; font-family: inherit;
+    border: 1px solid var(--w-text); background: var(--w-text); color: white; cursor: pointer;
+  }
+  .w-btn-primary:disabled { border-color: var(--w-border); background: var(--w-fill); color: var(--w-muted); cursor: default; }
+  .w-btn-sm { font-size: 11px; padding: 3px 8px; border: 1px solid var(--w-border); background: white; cursor: pointer; font-family: inherit; }
+  .w-divider { border: none; border-top: 1px solid var(--w-border); margin: 10px 0; }
+
+  /* Cards */
+  .w-card { border: 1px solid var(--w-border); background: white; margin-bottom: 8px; }
+  .w-card-header { padding: 8px 10px; border-bottom: 1px solid var(--w-border); display: flex; align-items: center; gap: 6px; }
+  .w-card-title { font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.06em; color: var(--w-muted); }
+  .w-card-body { padding: 10px; }
+
+  /* Skeleton */
+  .w-skel { background: var(--w-fill); height: 11px; border-radius: 2px; margin: 5px 0; }
+
+  /* Map */
+  .map-panel { position: relative; background: #dce8f0; overflow: hidden; }
+  .map-zoom-label { position: absolute; top: 8px; left: 8px; font-size: 10px; background: white; border: 1px solid var(--w-border); padding: 2px 6px; z-index: 10; }
+  .map-compass { position: absolute; top: 8px; right: 8px; font-size: 18px; color: var(--w-muted); z-index: 10; }
+
+  /* Shelter list item */
+  .shelter-item { padding: 6px 0; border-bottom: 1px solid var(--w-border); cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
+  .shelter-item:last-child { border-bottom: none; }
+  .shelter-item:hover { background: var(--w-fill); margin: 0 -10px; padding: 6px 10px; }
+  .badge-full { font-size: 10px; padding: 1px 5px; background: var(--w-fill); border: 1px solid var(--w-border); color: var(--w-muted); }
+  .badge-ok { font-size: 10px; padding: 1px 5px; background: white; border: 1px solid var(--w-text); }
+
+  /* Train row */
+  .train-row { padding: 5px 0; border-bottom: 1px solid var(--w-border); display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; font-size: 11px; }
+  .train-row:last-child { border-bottom: none; }
+
+  /* Marathon row */
+  .marathon-row { padding: 6px 0; border-bottom: 1px solid var(--w-border); font-size: 11px; }
+  .marathon-row:last-child { border-bottom: none; }
+</style>
+</head>
+<body class="viewport-desktop">
+
+<nav class="flex items-center gap-2 px-4 py-2">
+  <span class="text-xs mr-2" style="color:var(--w-muted)">wireframe</span>
+  <button id="nav-0" onclick="show(0)" class="px-2 py-1">S1 랜딩</button>
+  <button id="nav-1" onclick="show(1)" class="px-2 py-1">S2+S3 산선택·경로</button>
+  <button id="nav-2" onclick="show(2)" class="px-2 py-1">S4 로딩</button>
+  <button id="nav-3" onclick="show(3)" class="px-2 py-1">S4 브리핑 완료</button>
+  <button id="nav-4" onclick="show(4)" class="px-2 py-1">S5 유효성 오류</button>
+  <button id="nav-5" onclick="show(5)" class="px-2 py-1">S6 섹션 오류</button>
+  <div class="vp-toggle flex ml-auto">
+    <button id="vp-desktop" onclick="setViewport('desktop')" class="active">Desktop</button>
+    <button id="vp-mobile" onclick="setViewport('mobile')">Mobile</button>
+  </div>
+</nav>
+
+<!-- S1: 랜딩 / 초기 상태 -->
+<div id="screen-0" class="screen" data-scenario="S1">
+  <div class="screen-content" style="height: calc(100vh - 41px);">
+    <div class="app-layout flex h-full">
+
+      <!-- Sidebar -->
+      <div class="sidebar" style="width:300px; border-right:1px solid var(--w-border); overflow-y:auto; background:white; flex-shrink:0; padding:16px; display:flex; flex-direction:column; gap:10px;">
+        <div>
+          <div style="font-size:16px; font-weight:bold; margin-bottom:4px;">산행 브리핑</div>
+          <div style="font-size:11px; color:var(--w-muted); line-height:1.5;">등산 전 필요한 날씨·대피소·교통·마라톤 정보를 한 번에 확인하세요.</div>
+        </div>
+        <hr class="w-divider">
+        <div>
+          <label class="w-label">산 선택</label>
+          <select class="w-select">
+            <option value="">— 산을 선택하세요 —</option>
+            <option>지리산</option>
+            <option>설악산</option>
+            <option>덕유산</option>
+            <option>소백산</option>
+          </select>
+        </div>
+        <div>
+          <label class="w-label">날짜</label>
+          <input type="text" class="w-input-field" placeholder="YYYY-MM-DD" value="">
+        </div>
+        <div>
+          <label class="w-label">기차 출발역 <span style="color:var(--w-muted)">(KTX·SRT)</span></label>
+          <input type="text" class="w-input-field" placeholder="예: 서울역" value="">
+        </div>
+        <hr class="w-divider">
+        <div>
+          <label class="w-label">등산 출발지</label>
+          <select class="w-select" disabled>
+            <option>— 산 선택 후 활성화 —</option>
+          </select>
+        </div>
+        <div>
+          <label class="w-label">등산 도착지</label>
+          <select class="w-select" disabled>
+            <option>— 산 선택 후 활성화 —</option>
+          </select>
+        </div>
+        <button class="w-btn-primary" disabled>브리핑 보기</button>
+      </div>
+
+      <!-- Map: Korea full view -->
+      <div class="map-panel flex-1" style="min-height:300px;">
+        <div class="map-zoom-label">전국 보기</div>
+        <div class="map-compass">⊕</div>
+        <svg width="100%" height="100%" viewBox="0 0 500 560" preserveAspectRatio="xMidYMid meet">
+          <!-- Background water -->
+          <rect width="500" height="560" fill="#dce8f0"/>
+          <!-- Korea peninsula silhouette -->
+          <path d="M 195,35 C 210,28 235,22 258,28 C 275,33 295,45 312,62
+                   C 330,80 345,105 352,135 C 360,165 358,195 362,225
+                   C 366,255 362,280 358,305 C 354,330 342,355 326,378
+                   C 310,400 290,420 265,438 C 242,455 215,465 190,468
+                   C 165,470 140,462 118,446 C 97,430 80,405 68,378
+                   C 56,350 50,318 50,288 C 50,258 56,228 65,200
+                   C 74,172 86,145 100,122 C 115,98 132,75 152,58 C 168,44 182,40 195,35 Z"
+                fill="#e8ede8" stroke="#b8c8b0" stroke-width="1.5"/>
+          <!-- Mountain markers - full Korea view -->
+          <!-- 설악산 (NE) -->
+          <g transform="translate(310, 110)">
+            <polygon points="0,-14 12,6 -12,6" fill="var(--w-border)" stroke="var(--w-text)" stroke-width="1"/>
+            <rect x="-22" y="8" width="44" height="14" fill="white" stroke="var(--w-border)" stroke-width="1"/>
+            <text x="0" y="18" text-anchor="middle" font-size="9" fill="var(--w-text)">설악산</text>
+          </g>
+          <!-- 소백산 (center) -->
+          <g transform="translate(245, 230)">
+            <polygon points="0,-14 12,6 -12,6" fill="var(--w-border)" stroke="var(--w-text)" stroke-width="1"/>
+            <rect x="-22" y="8" width="44" height="14" fill="white" stroke="var(--w-border)" stroke-width="1"/>
+            <text x="0" y="18" text-anchor="middle" font-size="9" fill="var(--w-text)">소백산</text>
+          </g>
+          <!-- 덕유산 (SW-center) -->
+          <g transform="translate(150, 340)">
+            <polygon points="0,-14 12,6 -12,6" fill="var(--w-border)" stroke="var(--w-text)" stroke-width="1"/>
+            <rect x="-22" y="8" width="44" height="14" fill="white" stroke="var(--w-border)" stroke-width="1"/>
+            <text x="0" y="18" text-anchor="middle" font-size="9" fill="var(--w-text)">덕유산</text>
+          </g>
+          <!-- 지리산 (SW) -->
+          <g transform="translate(168, 415)">
+            <polygon points="0,-14 12,6 -12,6" fill="var(--w-border)" stroke="var(--w-text)" stroke-width="1"/>
+            <rect x="-22" y="8" width="44" height="14" fill="white" stroke="var(--w-border)" stroke-width="1"/>
+            <text x="0" y="18" text-anchor="middle" font-size="9" fill="var(--w-text)">지리산</text>
+          </g>
+        </svg>
+      </div>
+
+    </div>
+    <div class="screen-notes">
+      <details open>
+        <summary>Notes</summary>
+        <ul>
+          <li>트리거: 최초 접속</li>
+          <li>인터랙션: 산 선택 → 지도 줌인 + 등산 출발지/도착지 드롭다운 활성화 (S2로 전환)</li>
+          <li>인터랙션: 등산 출발지·도착지 미선택 시 "브리핑 보기" 버튼 비활성</li>
+        </ul>
+      </details>
+    </div>
+  </div>
+</div>
+
+<!-- S2+S3: 산 선택 + 경로·대피소 표시 -->
+<div id="screen-1" class="screen" data-scenario="S2, S3">
+  <div class="screen-content" style="height: calc(100vh - 41px);">
+    <div class="app-layout flex h-full">
+
+      <!-- Sidebar -->
+      <div class="sidebar" style="width:300px; border-right:1px solid var(--w-border); overflow-y:auto; background:white; flex-shrink:0; padding:16px; display:flex; flex-direction:column; gap:10px;">
+        <div>
+          <div style="font-size:16px; font-weight:bold; margin-bottom:4px;">산행 브리핑</div>
+          <div style="font-size:11px; color:var(--w-muted); line-height:1.5;">등산 전 필요한 정보를 한 번에 확인하세요.</div>
+        </div>
+        <hr class="w-divider">
+        <div>
+          <label class="w-label">산 선택</label>
+          <select class="w-select">
+            <option>지리산</option>
+            <option>설악산</option>
+            <option>덕유산</option>
+            <option>소백산</option>
+          </select>
+        </div>
+        <div>
+          <label class="w-label">날짜</label>
+          <input type="text" class="w-input-field" value="2025-06-07">
+        </div>
+        <div>
+          <label class="w-label">기차 출발역</label>
+          <input type="text" class="w-input-field" value="서울역">
+        </div>
+        <hr class="w-divider">
+        <div>
+          <label class="w-label">등산 출발지</label>
+          <select class="w-select">
+            <option>성삼재</option>
+            <option>화엄사</option>
+            <option>중산리</option>
+            <option>백무동</option>
+          </select>
+        </div>
+        <div>
+          <label class="w-label">등산 도착지</label>
+          <select class="w-select">
+            <option>천왕봉</option>
+            <option>노고단</option>
+            <option>반야봉</option>
+          </select>
+        </div>
+        <button class="w-btn-primary">브리핑 보기</button>
+      </div>
+
+      <!-- Map: Jirisan zoomed view -->
+      <div class="map-panel flex-1" style="min-height:300px;">
+        <div class="map-zoom-label">지리산 · 상세 보기</div>
+        <div class="map-compass">⊕</div>
+        <svg width="100%" height="100%" viewBox="0 0 500 520" preserveAspectRatio="xMidYMid meet">
+          <rect width="500" height="520" fill="#dce8f0"/>
+          <!-- Terrain background -->
+          <rect x="30" y="40" width="440" height="440" rx="4" fill="#e4ece0" stroke="#b8c8b0" stroke-width="1"/>
+          <!-- Ridge / terrain lines (contour-like) -->
+          <path d="M 60,340 C 100,300 150,280 200,265 C 250,250 300,248 350,252 C 390,256 420,270 445,290"
+                fill="none" stroke="#c8d8c0" stroke-width="12" stroke-linecap="round"/>
+          <path d="M 80,370 C 120,335 165,315 215,300 C 262,285 310,282 358,288 C 398,293 428,308 450,326"
+                fill="none" stroke="#d0dcc8" stroke-width="8" stroke-linecap="round"/>
+
+          <!-- Route line: 성삼재 → 천왕봉 -->
+          <path d="M 105,310 L 148,288 L 198,272 L 250,260 L 300,258 L 348,265 L 390,278"
+                fill="none" stroke="var(--w-text)" stroke-width="2.5" stroke-dasharray="6,3"/>
+
+          <!-- Start marker: 성삼재 -->
+          <circle cx="105" cy="310" r="7" fill="white" stroke="var(--w-text)" stroke-width="2"/>
+          <text x="105" y="330" text-anchor="middle" font-size="9" fill="var(--w-text)">성삼재</text>
+          <text x="105" y="340" text-anchor="middle" font-size="8" fill="var(--w-muted)">출발</text>
+
+          <!-- End marker: 천왕봉 -->
+          <polygon points="390,258 400,278 380,278" fill="var(--w-text)"/>
+          <text x="390" y="295" text-anchor="middle" font-size="9" fill="var(--w-text)">천왕봉</text>
+          <text x="390" y="305" text-anchor="middle" font-size="8" fill="var(--w-muted)">도착</text>
+
+          <!-- Shelter markers -->
+          <!-- 노고단 -->
+          <circle cx="148" cy="288" r="5" fill="var(--w-fill)" stroke="var(--w-text)" stroke-width="1.5"/>
+          <text x="148" y="278" text-anchor="middle" font-size="8" fill="var(--w-text)">노고단</text>
+
+          <!-- 연하천 -->
+          <circle cx="198" cy="272" r="5" fill="var(--w-fill)" stroke="var(--w-text)" stroke-width="1.5"/>
+          <text x="198" y="262" text-anchor="middle" font-size="8" fill="var(--w-text)">연하천</text>
+
+          <!-- 벽소령 -->
+          <circle cx="250" cy="260" r="5" fill="var(--w-fill)" stroke="var(--w-text)" stroke-width="1.5"/>
+          <text x="250" y="250" text-anchor="middle" font-size="8" fill="var(--w-text)">벽소령</text>
+
+          <!-- 세석 -->
+          <circle cx="300" cy="258" r="5" fill="var(--w-fill)" stroke="var(--w-text)" stroke-width="1.5"/>
+          <text x="300" y="248" text-anchor="middle" font-size="8" fill="var(--w-text)">세석</text>
+
+          <!-- 장터목 -->
+          <circle cx="348" cy="265" r="5" fill="var(--w-fill)" stroke="var(--w-text)" stroke-width="1.5"/>
+          <text x="348" y="255" text-anchor="middle" font-size="8" fill="var(--w-text)">장터목</text>
+
+          <!-- Legend -->
+          <rect x="35" y="440" width="200" height="48" fill="white" stroke="var(--w-border)" stroke-width="1"/>
+          <line x1="45" y1="454" x2="75" y2="454" stroke="var(--w-text)" stroke-width="2" stroke-dasharray="5,2"/>
+          <text x="80" y="457" font-size="9" fill="var(--w-text)">등산 경로</text>
+          <circle cx="50" cy="472" r="5" fill="var(--w-fill)" stroke="var(--w-text)" stroke-width="1.5"/>
+          <text x="80" y="475" font-size="9" fill="var(--w-text)">대피소</text>
+        </svg>
+      </div>
+
+    </div>
+    <div class="screen-notes">
+      <details open>
+        <summary>Notes</summary>
+        <ul>
+          <li>트리거: S1에서 산 선택 시 자동 전환</li>
+          <li>인터랙션: 등산 출발지·도착지 선택 → 지도에 경로·대피소 실시간 반영</li>
+          <li>인터랙션: "브리핑 보기" 클릭 → S4 로딩으로 전환</li>
+          <li>인터랙션: 대피소 마커 클릭 → 사이드패널의 해당 대피소 항목으로 스크롤 (S4 완료 시)</li>
+        </ul>
+      </details>
+    </div>
+  </div>
+</div>
+
+<!-- S4 로딩: 스켈레톤 -->
+<div id="screen-2" class="screen" data-scenario="S4-loading">
+  <div class="screen-content" style="height: calc(100vh - 41px);">
+    <div class="app-layout flex h-full">
+
+      <div class="sidebar" style="width:300px; border-right:1px solid var(--w-border); overflow-y:auto; background:white; flex-shrink:0; padding:16px; display:flex; flex-direction:column; gap:10px;">
+        <div style="font-size:13px; font-weight:bold;">지리산 · 2025-06-07</div>
+        <button class="w-btn-primary" disabled style="font-size:11px;">불러오는 중...</button>
+        <hr class="w-divider">
+
+        <!-- 날씨 skeleton -->
+        <div class="w-card">
+          <div class="w-card-header">
+            <i data-lucide="cloud" style="width:12px;height:12px;"></i>
+            <span class="w-card-title">날씨</span>
+          </div>
+          <div class="w-card-body">
+            <div class="w-skel" style="width:60%"></div>
+            <div class="w-skel" style="width:40%"></div>
+          </div>
+        </div>
+
+        <!-- 대피소 skeleton -->
+        <div class="w-card">
+          <div class="w-card-header">
+            <i data-lucide="tent" style="width:12px;height:12px;"></i>
+            <span class="w-card-title">대피소</span>
+          </div>
+          <div class="w-card-body">
+            <div class="w-skel" style="width:80%"></div>
+            <div class="w-skel" style="width:65%"></div>
+            <div class="w-skel" style="width:70%"></div>
+          </div>
+        </div>
+
+        <!-- 교통 skeleton -->
+        <div class="w-card">
+          <div class="w-card-header">
+            <i data-lucide="train" style="width:12px;height:12px;"></i>
+            <span class="w-card-title">교통 · KTX/SRT</span>
+          </div>
+          <div class="w-card-body">
+            <div class="w-skel" style="width:90%"></div>
+            <div class="w-skel" style="width:85%"></div>
+            <div class="w-skel" style="width:88%"></div>
+          </div>
+        </div>
+
+        <!-- 마라톤 skeleton -->
+        <div class="w-card">
+          <div class="w-card-header">
+            <i data-lucide="activity" style="width:12px;height:12px;"></i>
+            <span class="w-card-title">마라톤·트라이애슬론</span>
+          </div>
+          <div class="w-card-body">
+            <div class="w-skel" style="width:75%"></div>
+            <div class="w-skel" style="width:60%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Map: Jirisan (same as S2+S3) -->
+      <div class="map-panel flex-1" style="min-height:300px;">
+        <div class="map-zoom-label">지리산 · 상세 보기</div>
+        <svg width="100%" height="100%" viewBox="0 0 500 520" preserveAspectRatio="xMidYMid meet">
+          <rect width="500" height="520" fill="#dce8f0"/>
+          <rect x="30" y="40" width="440" height="440" rx="4" fill="#e4ece0" stroke="#b8c8b0" stroke-width="1"/>
+          <path d="M 60,340 C 100,300 150,280 200,265 C 250,250 300,248 350,252 C 390,256 420,270 445,290" fill="none" stroke="#c8d8c0" stroke-width="12" stroke-linecap="round"/>
+          <path d="M 105,310 L 148,288 L 198,272 L 250,260 L 300,258 L 348,265 L 390,278" fill="none" stroke="var(--w-text)" stroke-width="2.5" stroke-dasharray="6,3"/>
+          <circle cx="105" cy="310" r="7" fill="white" stroke="var(--w-text)" stroke-width="2"/>
+          <text x="105" y="330" text-anchor="middle" font-size="9" fill="var(--w-text)">성삼재</text>
+          <polygon points="390,258 400,278 380,278" fill="var(--w-text)"/>
+          <text x="390" y="295" text-anchor="middle" font-size="9" fill="var(--w-text)">천왕봉</text>
+          <circle cx="148" cy="288" r="5" fill="var(--w-fill)" stroke="var(--w-text)" stroke-width="1.5"/>
+          <circle cx="198" cy="272" r="5" fill="var(--w-fill)" stroke="var(--w-text)" stroke-width="1.5"/>
+          <circle cx="250" cy="260" r="5" fill="var(--w-fill)" stroke="var(--w-text)" stroke-width="1.5"/>
+          <circle cx="300" cy="258" r="5" fill="var(--w-fill)" stroke="var(--w-text)" stroke-width="1.5"/>
+          <circle cx="348" cy="265" r="5" fill="var(--w-fill)" stroke="var(--w-text)" stroke-width="1.5"/>
+        </svg>
+      </div>
+
+    </div>
+    <div class="screen-notes">
+      <details open>
+        <summary>Notes</summary>
+        <ul>
+          <li>트리거: "브리핑 보기" 클릭 직후</li>
+          <li>인터랙션: 데이터 도착 순서대로 스켈레톤 → 실제 데이터 교체 (S4 완료)</li>
+          <li>지도는 로딩 중에도 유지됨</li>
+        </ul>
+      </details>
+    </div>
+  </div>
+</div>
+
+<!-- S4 완료: 브리핑 결과 -->
+<div id="screen-3" class="screen" data-scenario="S4-1, S4-2, S4-3, S4-4">
+  <div class="screen-content" style="height: calc(100vh - 41px);">
+    <div class="app-layout flex h-full">
+
+      <div class="sidebar" style="width:300px; border-right:1px solid var(--w-border); overflow-y:auto; background:white; flex-shrink:0; padding:16px; display:flex; flex-direction:column; gap:10px;">
+        <div style="font-size:13px; font-weight:bold;">지리산 · 2025-06-07</div>
+        <button class="w-btn-primary" style="font-size:11px;">다시 검색</button>
+        <hr class="w-divider">
+
+        <!-- 날씨 -->
+        <div class="w-card">
+          <div class="w-card-header">
+            <i data-lucide="sun" style="width:12px;height:12px;"></i>
+            <span class="w-card-title">날씨</span>
+          </div>
+          <div class="w-card-body">
+            <div style="font-size:22px; margin-bottom:4px;">☀️ 맑음</div>
+            <div style="font-size:13px;">최고 <strong>24°C</strong> / 최저 <strong>12°C</strong></div>
+            <div style="font-size:11px; color:var(--w-muted); margin-top:4px;">강수확률 10% · 풍속 3m/s</div>
+          </div>
+        </div>
+
+        <!-- 대피소 -->
+        <div class="w-card">
+          <div class="w-card-header">
+            <i data-lucide="tent" style="width:12px;height:12px;"></i>
+            <span class="w-card-title">대피소</span>
+            <span style="font-size:10px; margin-left:auto; color:var(--w-muted);">클릭 → 지도 이동</span>
+          </div>
+          <div class="w-card-body" style="padding-bottom:4px;">
+            <div class="shelter-item">
+              <span>노고단대피소</span>
+              <span class="badge-ok">잔여 8</span>
+            </div>
+            <div class="shelter-item">
+              <span>연하천대피소</span>
+              <span class="badge-ok">잔여 3</span>
+            </div>
+            <div class="shelter-item">
+              <span>벽소령대피소</span>
+              <span class="badge-full">만실</span>
+            </div>
+            <div class="shelter-item">
+              <span>세석대피소</span>
+              <span class="badge-ok">잔여 12</span>
+            </div>
+            <div class="shelter-item">
+              <span>장터목대피소</span>
+              <span class="badge-full">만실</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 교통 -->
+        <div class="w-card">
+          <div class="w-card-header">
+            <i data-lucide="train" style="width:12px;height:12px;"></i>
+            <span class="w-card-title">KTX·SRT</span>
+            <span style="font-size:10px; margin-left:auto; color:var(--w-muted);">서울역 → 구례구역</span>
+          </div>
+          <div class="w-card-body" style="padding-bottom:4px;">
+            <div class="train-row" style="font-size:10px; color:var(--w-muted); border-bottom:1px solid var(--w-border); padding-bottom:4px; margin-bottom:2px;">
+              <span>출발</span><span>도착</span><span>종류</span><span>잔여석</span>
+            </div>
+            <div class="train-row"><span>06:10</span><span>08:45</span><span>KTX</span><span>○ 여유</span></div>
+            <div class="train-row"><span>07:30</span><span>10:02</span><span>SRT</span><span>△ 보통</span></div>
+            <div class="train-row"><span>08:00</span><span>10:38</span><span>KTX</span><span>× 매진</span></div>
+            <div class="train-row"><span>09:20</span><span>11:55</span><span>KTX</span><span>○ 여유</span></div>
+          </div>
+        </div>
+
+        <!-- 마라톤 -->
+        <div class="w-card">
+          <div class="w-card-header">
+            <i data-lucide="activity" style="width:12px;height:12px;"></i>
+            <span class="w-card-title">마라톤·트라이애슬론</span>
+            <span style="font-size:10px; margin-left:auto; color:var(--w-muted);">±30일</span>
+          </div>
+          <div class="w-card-body" style="padding-bottom:4px;">
+            <div class="marathon-row">
+              <div style="font-weight:bold;">지리산 둘레길 마라톤</div>
+              <div style="color:var(--w-muted);">2025-05-25 · 경남 남원 · 접수마감 05-10</div>
+              <a href="#" style="font-size:10px; color:var(--w-text); text-decoration:underline;">공식 사이트 →</a>
+            </div>
+            <div class="marathon-row">
+              <div style="font-weight:bold;">섬진강 봄 하프마라톤</div>
+              <div style="color:var(--w-muted);">2025-06-14 · 전남 구례 · 접수마감 05-30</div>
+              <a href="#" style="font-size:10px; color:var(--w-text); text-decoration:underline;">공식 사이트 →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Map -->
+      <div class="map-panel flex-1" style="min-height:300px;">
+        <div class="map-zoom-label">지리산 · 상세 보기</div>
+        <svg width="100%" height="100%" viewBox="0 0 500 520" preserveAspectRatio="xMidYMid meet">
+          <rect width="500" height="520" fill="#dce8f0"/>
+          <rect x="30" y="40" width="440" height="440" rx="4" fill="#e4ece0" stroke="#b8c8b0" stroke-width="1"/>
+          <path d="M 60,340 C 100,300 150,280 200,265 C 250,250 300,248 350,252 C 390,256 420,270 445,290" fill="none" stroke="#c8d8c0" stroke-width="12" stroke-linecap="round"/>
+          <path d="M 105,310 L 148,288 L 198,272 L 250,260 L 300,258 L 348,265 L 390,278" fill="none" stroke="var(--w-text)" stroke-width="2.5" stroke-dasharray="6,3"/>
+          <circle cx="105" cy="310" r="7" fill="white" stroke="var(--w-text)" stroke-width="2"/>
+          <text x="105" y="330" text-anchor="middle" font-size="9" fill="var(--w-text)">성삼재</text>
+          <polygon points="390,258 400,278 380,278" fill="var(--w-text)"/>
+          <text x="390" y="295" text-anchor="middle" font-size="9" fill="var(--w-text)">천왕봉</text>
+          <!-- Shelter markers with availability -->
+          <circle cx="148" cy="288" r="6" fill="white" stroke="var(--w-text)" stroke-width="1.5"/>
+          <text x="148" y="291" text-anchor="middle" font-size="8" fill="var(--w-text)" font-weight="bold">8</text>
+          <text x="148" y="278" text-anchor="middle" font-size="8" fill="var(--w-text)">노고단</text>
+          <circle cx="198" cy="272" r="6" fill="white" stroke="var(--w-text)" stroke-width="1.5"/>
+          <text x="198" y="275" text-anchor="middle" font-size="8" fill="var(--w-text)" font-weight="bold">3</text>
+          <text x="198" y="262" text-anchor="middle" font-size="8" fill="var(--w-text)">연하천</text>
+          <!-- 만실 -->
+          <circle cx="250" cy="260" r="6" fill="var(--w-fill)" stroke="var(--w-border)" stroke-width="1.5"/>
+          <text x="250" y="263" text-anchor="middle" font-size="7" fill="var(--w-muted)">만실</text>
+          <text x="250" y="250" text-anchor="middle" font-size="8" fill="var(--w-text)">벽소령</text>
+          <circle cx="300" cy="258" r="6" fill="white" stroke="var(--w-text)" stroke-width="1.5"/>
+          <text x="300" y="261" text-anchor="middle" font-size="8" fill="var(--w-text)" font-weight="bold">12</text>
+          <text x="300" y="248" text-anchor="middle" font-size="8" fill="var(--w-text)">세석</text>
+          <!-- 만실 -->
+          <circle cx="348" cy="265" r="6" fill="var(--w-fill)" stroke="var(--w-border)" stroke-width="1.5"/>
+          <text x="348" y="268" text-anchor="middle" font-size="7" fill="var(--w-muted)">만실</text>
+          <text x="348" y="255" text-anchor="middle" font-size="8" fill="var(--w-text)">장터목</text>
+          <!-- Legend -->
+          <rect x="35" y="440" width="240" height="62" fill="white" stroke="var(--w-border)" stroke-width="1"/>
+          <line x1="45" y1="454" x2="75" y2="454" stroke="var(--w-text)" stroke-width="2" stroke-dasharray="5,2"/>
+          <text x="80" y="457" font-size="9" fill="var(--w-text)">등산 경로</text>
+          <circle cx="50" cy="472" r="6" fill="white" stroke="var(--w-text)" stroke-width="1.5"/>
+          <text x="57" y="475" font-size="8" fill="var(--w-text)" font-weight="bold">N</text>
+          <text x="80" y="475" font-size="9" fill="var(--w-text)">대피소 (숫자 = 잔여)</text>
+          <circle cx="50" cy="488" r="6" fill="var(--w-fill)" stroke="var(--w-border)" stroke-width="1.5"/>
+          <text x="80" y="491" font-size="9" fill="var(--w-text)">대피소 (만실)</text>
+        </svg>
+      </div>
+
+    </div>
+    <div class="screen-notes">
+      <details open>
+        <summary>Notes</summary>
+        <ul>
+          <li>트리거: 모든 섹션 데이터 로드 완료 (또는 순차 도착)</li>
+          <li>인터랙션: 대피소 목록 항목 클릭 → 지도가 해당 대피소 마커 위치로 이동</li>
+          <li>인터랙션: 지도의 대피소 마커 클릭 → 사이드패널 해당 항목 하이라이트</li>
+          <li>인터랙션: "다시 검색" → 입력 폼으로 돌아감</li>
+        </ul>
+      </details>
+    </div>
+  </div>
+</div>
+
+<!-- S5: 유효성 오류 -->
+<div id="screen-4" class="screen" data-scenario="S5">
+  <div class="screen-content" style="height: calc(100vh - 41px);">
+    <div class="app-layout flex h-full">
+
+      <div class="sidebar" style="width:300px; border-right:1px solid var(--w-border); overflow-y:auto; background:white; flex-shrink:0; padding:16px; display:flex; flex-direction:column; gap:10px;">
+        <div>
+          <div style="font-size:16px; font-weight:bold; margin-bottom:4px;">산행 브리핑</div>
+          <div style="font-size:11px; color:var(--w-muted);">등산 전 필요한 정보를 한 번에 확인하세요.</div>
+        </div>
+        <hr class="w-divider">
+        <div>
+          <label class="w-label">산 선택</label>
+          <select class="w-select error">
+            <option value="">— 산을 선택하세요 —</option>
+          </select>
+          <div class="w-error-msg">산을 선택하세요</div>
+        </div>
+        <div>
+          <label class="w-label">날짜</label>
+          <input type="text" class="w-input-field error" value="">
+          <div class="w-error-msg">날짜를 입력하세요</div>
+        </div>
+        <div>
+          <label class="w-label">기차 출발역</label>
+          <input type="text" class="w-input-field" value="서울역">
+        </div>
+        <hr class="w-divider">
+        <div>
+          <label class="w-label">등산 출발지</label>
+          <select class="w-select" disabled><option>— 산 선택 후 활성화 —</option></select>
+        </div>
+        <div>
+          <label class="w-label">등산 도착지</label>
+          <select class="w-select" disabled><option>— 산 선택 후 활성화 —</option></select>
+        </div>
+        <button class="w-btn-primary" disabled>브리핑 보기</button>
+      </div>
+
+      <div class="map-panel flex-1" style="min-height:300px;">
+        <div class="map-zoom-label">전국 보기</div>
+        <svg width="100%" height="100%" viewBox="0 0 500 560" preserveAspectRatio="xMidYMid meet">
+          <rect width="500" height="560" fill="#dce8f0"/>
+          <path d="M 195,35 C 210,28 235,22 258,28 C 275,33 295,45 312,62 C 330,80 345,105 352,135 C 360,165 358,195 362,225 C 366,255 362,280 358,305 C 354,330 342,355 326,378 C 310,400 290,420 265,438 C 242,455 215,465 190,468 C 165,470 140,462 118,446 C 97,430 80,405 68,378 C 56,350 50,318 50,288 C 50,258 56,228 65,200 C 74,172 86,145 100,122 C 115,98 132,75 152,58 C 168,44 182,40 195,35 Z" fill="#e8ede8" stroke="#b8c8b0" stroke-width="1.5"/>
+        </svg>
+      </div>
+
+    </div>
+    <div class="screen-notes">
+      <details open>
+        <summary>Notes</summary>
+        <ul>
+          <li>트리거: 필수 필드 미입력 상태에서 "브리핑 보기" 클릭</li>
+          <li>인터랙션: 오류 필드에 빨간 테두리 + 오류 문구 표시</li>
+          <li>인터랙션: 올바른 값 입력 시 오류 표시 즉시 제거</li>
+        </ul>
+      </details>
+    </div>
+  </div>
+</div>
+
+<!-- S6: 섹션 오류 -->
+<div id="screen-5" class="screen" data-scenario="S6">
+  <div class="screen-content" style="height: calc(100vh - 41px);">
+    <div class="app-layout flex h-full">
+
+      <div class="sidebar" style="width:300px; border-right:1px solid var(--w-border); overflow-y:auto; background:white; flex-shrink:0; padding:16px; display:flex; flex-direction:column; gap:10px;">
+        <div style="font-size:13px; font-weight:bold;">지리산 · 2025-06-07</div>
+        <button class="w-btn-primary" style="font-size:11px;">다시 검색</button>
+        <hr class="w-divider">
+
+        <!-- 날씨: 정상 -->
+        <div class="w-card">
+          <div class="w-card-header">
+            <i data-lucide="sun" style="width:12px;height:12px;"></i>
+            <span class="w-card-title">날씨</span>
+          </div>
+          <div class="w-card-body">
+            <div style="font-size:20px; margin-bottom:4px;">☀️ 맑음</div>
+            <div style="font-size:12px;">최고 <strong>24°C</strong> / 최저 <strong>12°C</strong></div>
+          </div>
+        </div>
+
+        <!-- 대피소: 오류 -->
+        <div class="w-card" style="border-color:#e57373;">
+          <div class="w-card-header" style="border-bottom-color:#e57373;">
+            <i data-lucide="tent" style="width:12px;height:12px;"></i>
+            <span class="w-card-title">대피소</span>
+          </div>
+          <div class="w-card-body" style="display:flex; flex-direction:column; align-items:center; gap:8px; padding:16px;">
+            <i data-lucide="alert-circle" style="width:20px;height:20px; color:#e57373;"></i>
+            <div style="font-size:11px; color:#c0392b; text-align:center;">대피소 정보를 불러오지 못했습니다</div>
+            <button class="w-btn-sm">
+              <i data-lucide="refresh-cw" style="width:10px;height:10px; display:inline-block; vertical-align:middle;"></i>
+              재시도
+            </button>
+          </div>
+        </div>
+
+        <!-- 교통: 정상 -->
+        <div class="w-card">
+          <div class="w-card-header">
+            <i data-lucide="train" style="width:12px;height:12px;"></i>
+            <span class="w-card-title">KTX·SRT</span>
+            <span style="font-size:10px; margin-left:auto; color:var(--w-muted);">서울역 → 구례구역</span>
+          </div>
+          <div class="w-card-body">
+            <div class="train-row"><span>06:10</span><span>08:45</span><span>KTX</span><span>○ 여유</span></div>
+            <div class="train-row"><span>07:30</span><span>10:02</span><span>SRT</span><span>△ 보통</span></div>
+          </div>
+        </div>
+
+        <!-- 마라톤: 정상 -->
+        <div class="w-card">
+          <div class="w-card-header">
+            <i data-lucide="activity" style="width:12px;height:12px;"></i>
+            <span class="w-card-title">마라톤·트라이애슬론</span>
+          </div>
+          <div class="w-card-body">
+            <div class="marathon-row">
+              <div style="font-weight:bold;">섬진강 봄 하프마라톤</div>
+              <div style="color:var(--w-muted);">2025-06-14 · 전남 구례</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="map-panel flex-1" style="min-height:300px;">
+        <div class="map-zoom-label">지리산 · 상세 보기</div>
+        <svg width="100%" height="100%" viewBox="0 0 500 520" preserveAspectRatio="xMidYMid meet">
+          <rect width="500" height="520" fill="#dce8f0"/>
+          <rect x="30" y="40" width="440" height="440" rx="4" fill="#e4ece0" stroke="#b8c8b0" stroke-width="1"/>
+          <path d="M 60,340 C 100,300 150,280 200,265 C 250,250 300,248 350,252 C 390,256 420,270 445,290" fill="none" stroke="#c8d8c0" stroke-width="12" stroke-linecap="round"/>
+          <path d="M 105,310 L 148,288 L 198,272 L 250,260 L 300,258 L 348,265 L 390,278" fill="none" stroke="var(--w-text)" stroke-width="2.5" stroke-dasharray="6,3"/>
+          <circle cx="105" cy="310" r="7" fill="white" stroke="var(--w-text)" stroke-width="2"/>
+          <polygon points="390,258 400,278 380,278" fill="var(--w-text)"/>
+          <!-- 대피소 오류 상태: 마커 없음, 표시 불가 안내 -->
+          <rect x="140" y="300" width="220" height="24" rx="2" fill="white" stroke="#e57373" stroke-width="1"/>
+          <text x="250" y="315" text-anchor="middle" font-size="10" fill="#c0392b">대피소 위치 정보 불러오기 실패</text>
+        </svg>
+      </div>
+
+    </div>
+    <div class="screen-notes">
+      <details open>
+        <summary>Notes</summary>
+        <ul>
+          <li>트리거: 특정 섹션 조회 실패 (나머지는 정상)</li>
+          <li>인터랙션: 오류 섹션의 "재시도" 클릭 → 해당 섹션만 다시 조회</li>
+          <li>지도에서도 해당 섹션 데이터(대피소 마커) 표시 불가 안내</li>
+        </ul>
+      </details>
+    </div>
+  </div>
+</div>
+
+<script>
+var screenIds = [];
+function show(id) {
+  document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+  document.getElementById('screen-' + id).classList.add('active');
+  document.querySelectorAll('nav button[id^="nav-"]').forEach(function(b) { b.classList.remove('active'); });
+  document.getElementById('nav-' + id).classList.add('active');
+}
+function setViewport(mode) {
+  document.body.classList.remove('viewport-mobile', 'viewport-desktop');
+  document.body.classList.add('viewport-' + mode);
+  document.querySelectorAll('.vp-toggle button').forEach(function(b) { b.classList.remove('active'); });
+  document.getElementById('vp-' + mode).classList.add('active');
+}
+document.addEventListener('DOMContentLoaded', function() {
+  var first = document.querySelector('nav button[id^="nav-"]');
+  if (first) first.click();
+  lucide.createIcons();
+});
+</script>
+</body>
+</html>

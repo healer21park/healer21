@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
   try {
     const segments = await fetchTrailSegments(mountainId)
     return NextResponse.json({ segments })
-  } catch {
-    return NextResponse.json({ segments: [], error: '등산로 데이터를 불러오지 못했습니다' })
+  } catch (e) {
+    return NextResponse.json({ segments: [], error: String(e) })
   }
 }
