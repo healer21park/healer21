@@ -36,6 +36,21 @@ describe('fetchShelterAvailability', () => {
     expect(nogodan?.available).toBe(8)
   })
 
+  it('스크래핑은 성공했으나 특정 대피소/날짜 정보가 HTML에 누락된 경우 available: 0으로 처리한다', async () => {
+    // 20250607 데이터만 존재하고 20250608 데이터는 없음
+    const fakeHtml = `
+      <i data-fclt-nm="노고단대피소" data-use_dt="20250607" data-rsvt-cnt="8"></i>
+    `
+    vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      text: async () => fakeHtml,
+    } as Response)
+
+    const result = await fetchShelterAvailability('jirisan', '2025-06-08')
+    const nogodan = result.find((s) => s.name === '노고단대피소')
+    expect(nogodan?.available).toBe(0)
+  })
+
   it('지리산 shelters 목록을 반환한다', async () => {
     vi.spyOn(global, 'fetch').mockRejectedValueOnce(new Error('fail'))
     const result = await fetchShelterAvailability('jirisan', '2025-06-07')

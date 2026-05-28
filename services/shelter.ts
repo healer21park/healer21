@@ -66,7 +66,9 @@ function parseShelterHtml(
 
   const dateMap = new Map<string, number>()
   let match: RegExpExecArray | null
+  let hasAnyMatch = false
   while ((match = blockRegex.exec(html)) !== null) {
+    hasAnyMatch = true
     const [, name, date, cnt] = match
     if (date === targetDate) {
       const current = dateMap.get(name)
@@ -77,7 +79,7 @@ function parseShelterHtml(
   }
 
   return shelters.map((shelter) => {
-    const available = dateMap.get(shelter.name) ?? null
+    const available = dateMap.get(shelter.name) ?? (hasAnyMatch ? 0 : null)
     return { id: shelter.id, name: shelter.name, available, capacity: 0 }
   })
 }
