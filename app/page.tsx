@@ -1,5 +1,5 @@
-import { ComponentExample } from "@/components/component-example";
+'use client'
 
-export default function Page() {
-return <ComponentExample />;
-}
+import HikingBriefingPage from './hiking-briefing/page'
+
+export default HikingBriefingPage
