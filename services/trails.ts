@@ -48,7 +48,7 @@ export async function fetchTrailSegments(mountainId: string): Promise<TrailSegme
   for (const f of features) {
     const geom = f.geometry as {
       type: string
-      coordinates: [number, number][][] | [number, number][][][]
+      coordinates: any
     }
     const props = f.properties as Record<string, string>
     const difficulty = parseDifficulty(props.cat_nam)
