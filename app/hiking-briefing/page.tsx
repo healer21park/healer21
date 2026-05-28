@@ -142,8 +142,6 @@ export default function HikingBriefingPage() {
                   {state.content.data && (
                     <ContentCard
                       data={state.content.data}
-                      naverMissing={!process.env.NEXT_PUBLIC_NAVER_CLIENT_ID}
-                      youtubeMissing={!process.env.NEXT_PUBLIC_YOUTUBE_API_KEY}
                     />
                   )}
                 </CardShell>

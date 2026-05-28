@@ -86,14 +86,6 @@ export type BlogPost = {
   description: string
 }
 
-export type YouTubeVideo = {
-  title: string
-  channelName: string
-  thumbnailUrl: string
-  link: string
-}
-
 export type ContentData = {
   blogs: BlogPost[]
-  videos: YouTubeVideo[]
 }

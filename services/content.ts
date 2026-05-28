@@ -1,14 +1,11 @@
-import type { ContentData, BlogPost, YouTubeVideo } from '@/types/hiking'
+import type { ContentData, BlogPost } from '@/types/hiking'
 
 export async function fetchContent(query: string): Promise<ContentData> {
-  const [blogs, videos] = await Promise.allSettled([
-    fetchNaverBlogs(query),
-    fetchYouTubeVideos(query),
-  ])
-
-  return {
-    blogs: blogs.status === 'fulfilled' ? blogs.value : [],
-    videos: videos.status === 'fulfilled' ? videos.value : [],
+  try {
+    const blogs = await fetchNaverBlogs(query)
+    return { blogs }
+  } catch {
+    return { blogs: [] }
   }
 }
 
@@ -37,34 +34,6 @@ async function fetchNaverBlogs(query: string): Promise<BlogPost[]> {
     link: item.link ?? '',
     description: stripHtml(item.description ?? ''),
   }))
-}
-
-async function fetchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
-  const apiKey = process.env.YOUTUBE_API_KEY
-  if (!apiKey) return []
-
-  const url = new URL('https://www.googleapis.com/youtube/v3/search')
-  url.searchParams.set('key', apiKey)
-  url.searchParams.set('q', `${query} 등산`)
-  url.searchParams.set('part', 'snippet')
-  url.searchParams.set('type', 'video')
-  url.searchParams.set('maxResults', '5')
-  url.searchParams.set('order', 'relevance')
-
-  const res = await fetch(url.toString())
-  if (!res.ok) throw new Error(`YouTube API ${res.status}`)
-
-  const json = await res.json()
-  return (json.items ?? []).map((item: Record<string, unknown>) => {
-    const snippet = item.snippet as Record<string, unknown>
-    const id = item.id as Record<string, string>
-    return {
-      title: String(snippet?.title ?? ''),
-      channelName: String(snippet?.channelTitle ?? ''),
-      thumbnailUrl: String((snippet?.thumbnails as Record<string, Record<string, string>>)?.medium?.url ?? ''),
-      link: `https://www.youtube.com/watch?v=${id?.videoId ?? ''}`,
-    }
-  })
 }
 
 function stripHtml(str: string) {
