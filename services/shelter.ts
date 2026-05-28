@@ -2,12 +2,11 @@ import type { ShelterAvailability } from '@/types/hiking'
 import { getMountain } from '@/config/mountains'
 import type { MountainId } from '@/types/hiking'
 
-// 국립공원 예약시스템 산 코드
-const MOUNTAIN_CODES: Record<MountainId, string> = {
-  jirisan: 'B011004',
-  seoraksan: 'B031002',
-  deogyusan: 'B051001',
-  sobaeksan: 'B122002',
+const DEPT_ID: Record<MountainId, string> = {
+  jirisan: 'B01',
+  seoraksan: 'B03',
+  deogyusan: 'B05',
+  sobaeksan: 'B12',
 }
 
 const KNPS_BASE = 'https://reservation.knps.or.kr'
@@ -19,33 +18,32 @@ export async function fetchShelterAvailability(
   const mountain = getMountain(mountainId)
   if (!mountain) throw new Error(`Unknown mountain: ${mountainId}`)
 
-  const mountainCode = MOUNTAIN_CODES[mountainId]
+  const deptId = DEPT_ID[mountainId]
+  const targetDate = date.replace(/-/g, '') // YYYYMMDD
 
   try {
     const params = new URLSearchParams({
-      parkCode: mountainCode,
-      searchDate: date,
+      deptId,
+      deptNm: mountain.name,
+      isGreenpoint: 'false',
     })
 
-    const res = await fetch(
-      `${KNPS_BASE}/reservation/shelter/searchMonthReservation.do`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Referer': `${KNPS_BASE}/reservation/shelter/searchSimpleShelterReservation.do`,
-          'User-Agent': 'Mozilla/5.0',
-        },
-        body: params.toString(),
+    const res = await fetch(`${KNPS_BASE}/reservation/shelter/tabShelter.do`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Referer': `${KNPS_BASE}/reservation/shelter/searchSimpleShelterReservation.do`,
+        'X-Requested-With': 'XMLHttpRequest',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
       },
-    )
+      body: params.toString(),
+    })
 
     if (!res.ok) throw new Error(`KNPS HTTP ${res.status}`)
 
     const html = await res.text()
-    return parseShelterHtml(html, mountain.shelters, date)
+    return parseShelterHtml(html, mountain.shelters, targetDate)
   } catch {
-    // 스크래핑 실패 시 null availability로 fallback
     return mountain.shelters.map((s) => ({
       id: s.id,
       name: s.name,
@@ -60,29 +58,26 @@ type ShelterConfigLike = { id: string; name: string }
 function parseShelterHtml(
   html: string,
   shelters: ShelterConfigLike[],
-  _date: string,
+  targetDate: string,
 ): ShelterAvailability[] {
-  // HTML에서 대피소별 잔여 인원 파싱 시도
-  // 파싱 실패 시 null fallback
-  return shelters.map((shelter) => {
-    try {
-      // 대피소 이름을 포함하는 테이블 행에서 숫자 추출 시도
-      const namePattern = shelter.name.replace('대피소', '')
-      const regex = new RegExp(
-        `${escapeRegex(namePattern)}[\\s\\S]{0,300}?(\\d+)\\s*명`,
-        'i',
-      )
-      const match = html.match(regex)
-      if (match) {
-        return { id: shelter.id, name: shelter.name, available: Number(match[1]), capacity: 0 }
-      }
-    } catch {
-      // ignore
-    }
-    return { id: shelter.id, name: shelter.name, available: null, capacity: 0 }
-  })
-}
+  // data-fclt-nm, data-use_dt, data-rsvt-cnt 속성을 한 블록에서 추출
+  const blockRegex =
+    /data-fclt-nm="([^"]+)"[\s\S]{0,500}?data-use_dt="(\d{8})"[\s\S]{0,400}?data-rsvt-cnt="(\d+)"/g
 
-function escapeRegex(str: string) {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const dateMap = new Map<string, number>()
+  let match: RegExpExecArray | null
+  while ((match = blockRegex.exec(html)) !== null) {
+    const [, name, date, cnt] = match
+    if (date === targetDate) {
+      const current = dateMap.get(name)
+      if (current === undefined || Number(cnt) < current) {
+        dateMap.set(name, Number(cnt))
+      }
+    }
+  }
+
+  return shelters.map((shelter) => {
+    const available = dateMap.get(shelter.name) ?? null
+    return { id: shelter.id, name: shelter.name, available, capacity: 0 }
+  })
 }

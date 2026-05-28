@@ -23,8 +23,8 @@ describe('fetchShelterAvailability', () => {
 
   it('응답에 잔여 인원 숫자가 있으면 파싱한다', async () => {
     const fakeHtml = `
-      <tr><td>노고단</td><td>8 명</td></tr>
-      <tr><td>장터목</td><td>0 명</td></tr>
+      <i data-fclt-nm="노고단대피소" data-use_dt="20250607" data-rsvt-cnt="8"></i>
+      <i data-fclt-nm="장터목대피소" data-use_dt="20250607" data-rsvt-cnt="0"></i>
     `
     vi.spyOn(global, 'fetch').mockResolvedValueOnce({
       ok: true,
